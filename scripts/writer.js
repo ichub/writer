@@ -1,6 +1,7 @@
 var fs = require('fs');
 var printOptions = {};
 var hb = require('./helpers')(require('handlebars'), printOptions);
+var marked = require('marked');
 var pdf = require('html-pdf');
 
 var args = process.argv.slice(2);
@@ -22,8 +23,10 @@ fs.readFile(args[0], 'utf8', function (err, userContent) {
             var contentTemplate = hb.compile(userContent);
 
             fs.readFile('styles/style.css', 'utf8', function(err, style) {
+                var body = contentTemplate(meta);
+                body = marked(body);
                 var compiled = templateTemplate({
-                    body: contentTemplate(meta),
+                    body: body,
                     style: '<style>\n' +
                             style +
                            '</style>'

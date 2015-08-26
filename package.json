@@ -5,7 +5,8 @@
     "gulp": "^3.9.0",
     "gulp-sass": "^2.0.4",
     "handlebars": "^3.0.3",
-    "html-pdf": "^1.2.2"
+    "html-pdf": "^1.2.2",
+    "marked": "^0.3.5"
   },
   "devDependencies": {}
 }
