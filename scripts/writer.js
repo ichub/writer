@@ -1,5 +1,14 @@
 var fs = require('fs');
-var printOptions = {};
+var printOptions = {
+    header: {
+        height: '1cm',
+        contents: require('./header')
+    },
+    footer: {
+        height: '1cm',
+        contents: require('./footer')
+    }
+};
 var hb = require('./helpers')(require('handlebars'), printOptions);
 var pdf = require('html-pdf');
 
