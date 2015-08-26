@@ -1,4 +1,5 @@
 var fs = require('fs');
+var hb = require('./helpers')(require('handlebars'));
 
 var args = process.argv.slice(2);
 
@@ -11,7 +12,10 @@ fs.readFile(args[0], 'utf8', function (err, data) {
         throw err;
     }
 
-    fs.writeFile('./compiled.html', data, function (err) {
+    var template = hb.compile(data);
+    var compiled = template({});
+
+    fs.writeFile('./compiled.html', compiled, function (err) {
         if (err) {
             throw err;
         }
