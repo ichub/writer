@@ -17,7 +17,7 @@ fs.readFile(args[0], 'utf8', function (err, userContent) {
         var contentTemplate = hb.compile(userContent);
 
         var compiled = templateTemplate({
-            body: contentTemplate({}).toString()
+            body: contentTemplate({})
         });
 
         fs.writeFile('./compiled.html', compiled, function (err) {
