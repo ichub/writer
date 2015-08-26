@@ -10,20 +10,35 @@ function findPeriod(periodNumber, meta) {
     throw 'no period found';
 }
 
-module.exports = function(hb, printInfo) {
-    hb.registerHelper('heading', function(options) {
+function preprocessHash(that, options, path) {
+    path = path || '';
+
+    for (var contextVarName in that) {
+        if (typeof that[contextVarName] != "object") {
+            for (var param in options.hash) {
+                var pathToObj = path == '' ? contextVarName : path + '.' + contextVarName;
+                options.hash[param] = options.hash[param].replace('{{' + pathToObj + '}}', that[contextVarName]);
+            }
+        } else {
+            preprocessHash(that[contextVarName], options, path == '' ? contextVarName : '.' + contextVarName);
+        }
+    }
+}
+
+module.exports = function (hb, printInfo) {
+    hb.registerHelper('heading', function (options) {
         if (typeof options.hash.period != 'undefined') {
             var course = findPeriod(options.hash.period, this);
             var n = '<br />';
             return '<span class="mla_heading">' +
-                       this.author + n + 'Period ' + course.period + ' ' + course.name + n + course.teacher + n + new Date().toDateString() + n +
-                   '</span>';
+                this.name.full + n + 'Period ' + course.period + ' ' + course.name + n + course.teacher + n + new Date().toDateString() + n +
+                '</span>';
         }
 
         return 'error';
     });
 
-    hb.registerHelper('document', function(options) {
+    hb.registerHelper('document', function (options) {
         for (prop in options.hash) {
             if (prop == 'margin') {
                 printInfo['border'] = {
@@ -38,20 +53,21 @@ module.exports = function(hb, printInfo) {
         }
     });
 
-    hb.registerHelper('header', function(options) {
+    hb.registerHelper('header', function (options) {
+        preprocessHash(this, options);
         var align = options.hash.align || 'center';
 
         printInfo.header = {
-            contents: '<div class="header" style="text-align:'+ align + '">' + options.hash.text + '</div>',
+            contents: '<div class="header" style="text-align:' + align + '">' + options.hash.text + '</div>',
             height: options.hash.height || '1cm'
         };
     });
 
-    hb.registerHelper('footer', function(options) {
+    hb.registerHelper('footer', function (options) {
         var align = options.hash.align || 'center';
 
         printInfo.footer = {
-            contents: '<div class="header" style="text-align:'+ align + '">' + options.hash.text + '</div>',
+            contents: '<div class="header" style="text-align:' + align + '">' + options.hash.text + '</div>',
             height: options.hash.height || '1cm'
         };
     });

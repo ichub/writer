@@ -1,5 +1,9 @@
 {
-  "author": "Ivan Chub",
+  "name": {
+    "first": "Ivan",
+    "last": "Chub",
+    "full": "Ivan Chub"
+  },
   "courses": [
     {
       "period": 1,
