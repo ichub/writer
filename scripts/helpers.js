@@ -1,3 +1,5 @@
+var metadata = require('./metadata');
+
 function findPeriod(periodNumber, meta) {
     for (var i = 0; i < meta.courses.length; i++) {
         if (meta.courses[i].period == periodNumber) {
@@ -34,6 +36,24 @@ module.exports = function(hb, printInfo) {
                 printInfo[prop] = options.hash[prop];
             }
         }
+    });
+
+    hb.registerHelper('header', function(options) {
+        var align = options.hash.align || 'center';
+
+        printInfo.header = {
+            contents: '<div class="header" style="text-align:'+ align + '">' + options.hash.text + '</div>',
+            height: options.hash.height || '1cm'
+        };
+    });
+
+    hb.registerHelper('footer', function(options) {
+        var align = options.hash.align || 'center';
+
+        printInfo.footer = {
+            contents: '<div class="header" style="text-align:'+ align + '">' + options.hash.text + '</div>',
+            height: options.hash.height || '1cm'
+        };
     });
 
     return hb;

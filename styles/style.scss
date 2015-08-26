@@ -2,11 +2,14 @@ body {
   font-family: 'Times New Roman', sans-serif;
 }
 
+$header_and_footer_color: #585858;
+
+.header {
+  color: $header_and_footer_color;
+}
+
 .footer {
-  color: #585858;
-  position: absolute;
-  top: 10px;
-  font-weight: bold;
+  color: $header_and_footer_color;
 }
 
 .mla_heading {
