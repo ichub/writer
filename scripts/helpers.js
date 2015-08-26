@@ -8,7 +8,7 @@ function findPeriod(periodNumber, meta) {
     throw 'no period found';
 }
 
-module.exports = function(hb) {
+module.exports = function(hb, printInfo) {
     hb.registerHelper('heading', function(options) {
         if (typeof options.hash.period != 'undefined') {
             var course = findPeriod(options.hash.period, this);
@@ -19,6 +19,19 @@ module.exports = function(hb) {
         }
 
         return 'error';
+    });
+
+    hb.registerHelper('style', function(options) {
+        for (prop in options.hash) {
+            if (prop == 'margin') {
+                printInfo['border'] = {
+                    top: options.hash[prop],
+                    right: options.hash[prop],
+                    bottom: options.hash[prop],
+                    left: options.hash[prop]
+                }
+            }
+        }
     });
 
     return hb;
