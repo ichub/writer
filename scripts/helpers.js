@@ -14,19 +14,32 @@ function preprocessHash(that, options, path) {
     path = path || '';
 
     for (var contextVarName in that) {
-        if (typeof that[contextVarName] != "object") {
-            for (var param in options.hash) {
-                var pathToObj = path == '' ? contextVarName : path + '.' + contextVarName;
-                options.hash[param] = options.hash[param].replace('{{' + pathToObj + '}}', that[contextVarName]);
+        if (!Array.isArray(that[contextVarName])) {
+            if (typeof that[contextVarName] != 'object') {
+                for (var param in options.hash) {
+                    if (typeof options.hash[param] == 'string') {
+                        var pathToObj = path == '' ? contextVarName : path + '.' + contextVarName;
+                        options.hash[param] = options.hash[param].replace('{{' + pathToObj + '}}', that[contextVarName]);
+                    }
+                }
+            } else {
+                preprocessHash(that[contextVarName], options, path == '' ? contextVarName : '.' + contextVarName);
             }
-        } else {
-            preprocessHash(that[contextVarName], options, path == '' ? contextVarName : '.' + contextVarName);
         }
     }
 }
 
+
 module.exports = function (hb, printInfo) {
-    hb.registerHelper('heading', function (options) {
+    function addHelper(name, helper) {
+        hb.registerHelper(name, function (options) {
+            preprocessHash(this, options);
+
+            return helper.apply(this, arguments);
+        });
+    }
+
+    addHelper('heading', function (options) {
         if (typeof options.hash.period != 'undefined') {
             var course = findPeriod(options.hash.period, this);
             var n = '<br />';
@@ -38,7 +51,7 @@ module.exports = function (hb, printInfo) {
         return 'error';
     });
 
-    hb.registerHelper('document', function (options) {
+    addHelper('document', function (options) {
         for (prop in options.hash) {
             if (prop == 'margin') {
                 printInfo['border'] = {
@@ -53,8 +66,7 @@ module.exports = function (hb, printInfo) {
         }
     });
 
-    hb.registerHelper('header', function (options) {
-        preprocessHash(this, options);
+    addHelper('header', function (options) {
         var align = options.hash.align || 'center';
 
         printInfo.header = {
@@ -63,7 +75,7 @@ module.exports = function (hb, printInfo) {
         };
     });
 
-    hb.registerHelper('footer', function (options) {
+    addHelper('footer', function (options) {
         var align = options.hash.align || 'center';
 
         printInfo.footer = {
