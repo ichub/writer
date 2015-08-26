@@ -1,0 +1,10 @@
+{
+  "author": "Ivan Chub",
+  "courses": [
+    {
+      "period": 1,
+      "teacher": "Mr. Teacher",
+      "name": "English"
+    }
+  ]
+}
