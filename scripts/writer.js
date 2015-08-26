@@ -1,5 +1,6 @@
 var fs = require('fs');
 var hb = require('./helpers')(require('handlebars'));
+var pdf = require('html-pdf');
 
 var args = process.argv.slice(2);
 
@@ -19,14 +20,30 @@ fs.readFile(args[0], 'utf8', function (err, userContent) {
             var templateTemplate = hb.compile(templateContent);
             var contentTemplate = hb.compile(userContent);
 
-            var compiled = templateTemplate({
-                body: contentTemplate(meta)
-            });
+            fs.readFile('styles/style.css', 'utf8', function(err, style) {
+                var compiled = templateTemplate({
+                    body: contentTemplate(meta),
+                    style: '<style>\n' +
+                            style +
+                           '</style>'
+                });
 
-            fs.writeFile('compiled.html', compiled, function (err) {
-                if (err) {
-                    throw err;
-                }
+                fs.writeFile('compiled.html', compiled, function (err) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    pdf.create(compiled, {
+                        width: '8.5in',
+                        height: '11in'
+                    }).toFile('./compiled.pdf', function(err, res) {
+                        if (err) {
+                            throw err;
+                        }
+
+
+                    });
+                });
             });
         });
     });

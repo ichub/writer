@@ -1,4 +1,6 @@
 .idea/
-compiled.html
 node_modules/
+styles/*.css
+compiled.pdf
+compiled.html
 
