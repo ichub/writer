@@ -1,3 +1,3 @@
 var metadata = require('./metadata');
 
-module.exports = '{{page}} of {{pages}}';
+module.exports = '<span class="footer">{{page}} of {{pages}}</span>';
