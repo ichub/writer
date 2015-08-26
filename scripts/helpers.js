@@ -30,6 +30,8 @@ module.exports = function(hb, printInfo) {
                     bottom: options.hash[prop],
                     left: options.hash[prop]
                 }
+            } else {
+                printInfo[prop] = options.hash[prop];
             }
         }
     });
