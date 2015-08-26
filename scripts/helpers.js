@@ -13,7 +13,9 @@ module.exports = function(hb) {
         if (typeof options.hash.period != 'undefined') {
             var course = findPeriod(options.hash.period, this);
             var n = '<br />';
-            return this.author + n + 'Period ' + course.period + ' ' + course.name + n + course.teacher + n + new Date().toDateString() + n;
+            return '<span class="mla_heading">' +
+                       this.author + n + 'Period ' + course.period + ' ' + course.name + n + course.teacher + n + new Date().toDateString() + n +
+                   '</span>';
         }
 
         return 'error';
