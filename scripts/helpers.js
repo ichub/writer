@@ -21,7 +21,7 @@ module.exports = function(hb, printInfo) {
         return 'error';
     });
 
-    hb.registerHelper('style', function(options) {
+    hb.registerHelper('document', function(options) {
         for (prop in options.hash) {
             if (prop == 'margin') {
                 printInfo['border'] = {
