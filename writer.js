@@ -7,17 +7,23 @@ if (args.length == 0) {
     throw 'ERR: you must pass in a path to a file';
 }
 
-fs.readFile(args[0], 'utf8', function (err, data) {
+fs.readFile(args[0], 'utf8', function (err, userContent) {
     if (err) {
         throw err;
     }
 
-    var template = hb.compile(data);
-    var compiled = template({});
+    fs.readFile('./template.hbs', 'utf8', function(err, templateContent) {
+        var templateTemplate = hb.compile(templateContent);
+        var contentTemplate = hb.compile(userContent);
 
-    fs.writeFile('./compiled.html', compiled, function (err) {
-        if (err) {
-            throw err;
-        }
+        var compiled = templateTemplate({
+            body: contentTemplate({}).toString()
+        });
+
+        fs.writeFile('./compiled.html', compiled, function (err) {
+            if (err) {
+                throw err;
+            }
+        });
     });
 });
