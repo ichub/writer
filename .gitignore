@@ -1,6 +1,6 @@
 .idea/
 node_modules/
-styles/*.css
+styles/stylus/*.css
 compiled.pdf
 compiled.html
 

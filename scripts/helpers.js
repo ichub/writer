@@ -1,4 +1,5 @@
 var metadata = require('./metadata');
+var katex = require('katex');
 
 function findPeriod(periodNumber, meta) {
     for (var i = 0; i < meta.courses.length; i++) {
@@ -82,6 +83,10 @@ module.exports = function (hb, printInfo) {
             contents: '<div class="header" style="text-align:' + align + '">' + options.hash.text + '</div>',
             height: options.hash.height || '1cm'
         };
+    });
+
+    addHelper('math', function(options) {
+        return katex.renderToString('\\int_2^5 x^2');
     });
 
     return hb;
