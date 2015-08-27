@@ -3,48 +3,30 @@ var printOptions = {};
 var hb = require('./helpers')(require('handlebars'), printOptions);
 var marked = require('marked');
 var pdf = require('html-pdf');
-var katex = require('katex');
 
 var args = process.argv.slice(2);
 
-if (args.length == 0) {
-    throw 'ERR: you must pass in a path to a file';
-}
+var userContent = fs.readFileSync(args[0], 'utf8');
+var metadata = JSON.parse(fs.readFileSync(args[1], 'utf8'));
 
-fs.readFile(args[0], 'utf8', function (err, userContent) {
-    if (err) {
-        throw err;
-    }
+var template = fs.readFileSync('content/template.hbs', 'utf8');
 
-    fs.readFile(args[1], 'utf8', function(err, metadata) {
-        var meta = JSON.parse(metadata);
+var contentTemplate = hb.compile(userContent);
+var templateTemplate = hb.compile(template);
 
-        fs.readFile('content/template.hbs', 'utf8', function(err, templateContent) {
-            var templateTemplate = hb.compile(templateContent);
-            var contentTemplate = hb.compile(userContent);
+var style = fs.readFileSync('styles/stylus/style.css', 'utf8');
 
-            fs.readFile('styles/stylus/style.css', 'utf8', function(err, style) {
-                var body = contentTemplate(meta);
-                body = marked(body);
-                var compiled = templateTemplate({
-                    body: body,
-                    style: '<style>\n' +
-                            style +
-                           '</style>'
-                });
+var body = contentTemplate(metadata);
+body = marked(body);
 
-                fs.writeFile('compiled.html', compiled, function (err) {
-                    if (err) {
-                        throw err;
-                    }
+var compiled = templateTemplate({
+    body: body,
+    style: '<style>\n' +
+    style +
+    '</style>'
+});
 
-                    pdf.create(compiled, printOptions).toFile('./compiled.pdf', function(err, res) {
-                        if (err) {
-                            throw err;
-                        }
-                    });
-                });
-            });
-        });
-    });
+fs.writeFileSync('compiled.html', compiled);
+
+pdf.create(compiled, printOptions).toFile('./compiled.pdf', function (err, res) {
 });
