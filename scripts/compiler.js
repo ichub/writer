@@ -1,3 +1,4 @@
+var fs = require('fs');
 var hb = require('handlebars');
 var katex = require('katex');
 var marked = require('marked');
@@ -108,6 +109,8 @@ function compileDocument(template, content, style, metadata) {
     pdf.create(compiled, printInfo).toFile('./compiled.pdf', function (err, buf) {
         prinInfo = {};
     });
+
+    fs.writeFileSync('./compiled.html', compiled);
 }
 
 module.exports = compileDocument;
