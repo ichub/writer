@@ -101,14 +101,15 @@ function compileDocument(template, content, style, metadata) {
     body = marked(body);
 
     var compiledStyle = sass.renderSync({
-        data: style
+        file: './styles/stylus/style.scss',
+        includePaths: [
+            './styles/stylus/'
+        ]
     }).css;
 
     var compiledHtml = templateTemplate({
         body: body,
-        style: '<style>\n' +
-        compiledStyle +
-        '</style>'
+        style: '<style>\n' + compiledStyle + '</style>'
     });
 
     pdf.create(compiledHtml, printInfo).toFile('./compiled.pdf', function (err, buf) {
