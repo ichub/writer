@@ -8,6 +8,4 @@ var template = fs.readFileSync('content/template.hbs', 'utf8');
 var style = fs.readFileSync('styles/stylus/style.css', 'utf8');
 var metadata = JSON.parse(fs.readFileSync(args[1], 'utf8'));
 
-var compiled = compiler(template, content, style, metadata);
-
-fs.writeFileSync('compiled.html', compiled);
+compiler(template, content, style, metadata);
