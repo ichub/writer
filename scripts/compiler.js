@@ -3,6 +3,7 @@ var hb = require('handlebars');
 var katex = require('katex');
 var marked = require('marked');
 var pdf = require('html-pdf');
+var sass = require('node-sass');
 
 function findPeriod(periodNumber, meta) {
     for (var i = 0; i < meta.courses.length; i++) {
@@ -99,18 +100,22 @@ function compileDocument(template, content, style, metadata) {
     var body = contentTemplate(metadata);
     body = marked(body);
 
-    var compiled = templateTemplate({
+    var compiledStyle = sass.renderSync({
+        data: style
+    }).css;
+
+    var compiledHtml = templateTemplate({
         body: body,
         style: '<style>\n' +
-        style +
+        compiledStyle +
         '</style>'
     });
 
-    pdf.create(compiled, printInfo).toFile('./compiled.pdf', function (err, buf) {
+    pdf.create(compiledHtml, printInfo).toFile('./compiled.pdf', function (err, buf) {
         prinInfo = {};
     });
 
-    fs.writeFileSync('./compiled.html', compiled);
+    fs.writeFileSync('./compiled.html', compiledHtml);
 }
 
 module.exports = compileDocument;
