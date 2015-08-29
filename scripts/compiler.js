@@ -132,7 +132,7 @@ addHelper('bibliography', function(options) {
     entries.push(mlaFormatBibEntry(bib[prop]));
   }
 
- entries.sort();
+  entries.sort();
 
   var result = '<ol class="bibliography">';
   entries.forEach(function(item) {
