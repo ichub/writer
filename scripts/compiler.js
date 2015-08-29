@@ -103,6 +103,10 @@ addHelper('image', function(options) {
 addHelper('ref', function(options) {
 });
 
+addHelper('new_page', function(options) {
+  return '<div style="page-break-after: always"></div>';
+});
+
 function valOrEmpty(val, other) {
   return val == undefined ? '' : val + other;
 }
