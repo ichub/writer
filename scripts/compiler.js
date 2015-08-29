@@ -4,6 +4,7 @@ var katex = require('katex');
 var marked = require('marked');
 var pdf = require('html-pdf');
 var sass = require('node-sass');
+var bibtex = require('bibtex-parser');
 
 function findPeriod(periodNumber, meta) {
   for (var i = 0; i < meta.courses.length; i++) {
@@ -97,6 +98,44 @@ addHelper('image', function(options) {
   var base64Image = new Buffer(image, 'binary').toString('base64');
 
   return '<img src="' + 'data:image/jpg;base64,' + base64Image + '"/>'
+});
+
+addHelper('ref', function(options) {
+});
+
+function valOrEmpty(val, other) {
+  return val == undefined ? '' : val + other;
+}
+
+function mlaFormatBibEntry(entry) {
+  return valOrEmpty(entry.AUTHOR, '. ') +
+    '<em>' +
+    valOrEmpty(entry.TITLE, '. ') +
+    '</em> ' +
+    valOrEmpty(entry.ADDRESS, ': ') +
+    valOrEmpty(entry.PUBLISHER, ', ') +
+    valOrEmpty(entry.YEAR, '. ') +
+    valOrEmpty(entry.MEDIUM, '.');
+}
+
+addHelper('bibliography', function(options) {
+  var bibtexText = fs.readFileSync('./bibtex.txt', 'utf8');
+  var bib = bibtex(bibtexText);
+
+  var entries = [];
+
+  for (var prop in bib) {
+    entries.push(mlaFormatBibEntry(bib[prop]));
+  }
+
+  // sort entries
+
+  var result = '';
+  entries.forEach(function(item) {
+    result += item + '<br />';
+  });
+
+  return result;
 });
 
 var printInfo = {};
