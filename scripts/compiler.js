@@ -132,12 +132,14 @@ addHelper('bibliography', function(options) {
     entries.push(mlaFormatBibEntry(bib[prop]));
   }
 
-  // sort entries
+ entries.sort();
 
-  var result = '';
+  var result = '<ol class="bibliography">';
   entries.forEach(function(item) {
-    result += item + '<br />';
+    result += '<li>' + item + '</li>';
   });
+
+  result += '</ol>';
 
   return result;
 });
