@@ -44,6 +44,40 @@ function addHelper(name, helper) {
   });
 }
 
+function addInputPassHelper(name, helper) {
+  addHelper(name, function() {
+    if (isFirstPass) {
+      helper.apply(this, arguments);
+    }
+
+    return '';
+  });
+}
+
+function addOutputPassHelper(name, helper) {
+  addHelper(name, function() {
+    if (!isFirstPass) {
+      return helper.apply(this, arguments);
+    }
+
+    return identityHelper(name).apply(this, arguments);
+  });
+}
+
+function identityHelper(name) {
+  return function(options) {
+    var result = '{{{' + name + ' ';
+
+    for (var prop in options.hash) {
+      result += prop + '=\"' + options.hash[prop].toString() + '\" ';
+    }
+
+    result += '}}}';
+
+    return result;
+  }
+}
+
 addHelper('heading', function (options) {
   if (typeof options.hash.period != 'undefined') {
     var course = findPeriod(options.hash.period, this);
@@ -56,7 +90,7 @@ addHelper('heading', function (options) {
   return 'error';
 });
 
-addHelper('document', function (options) {
+addInputPassHelper('document', function (options) {
   for (prop in options.hash) {
     if (prop == 'margin') {
       printInfo['border'] = {
@@ -71,7 +105,7 @@ addHelper('document', function (options) {
   }
 });
 
-addHelper('header', function (options) {
+addInputPassHelper('header', function (options) {
   var align = options.hash.align || 'center';
 
   printInfo.header = {
@@ -80,7 +114,7 @@ addHelper('header', function (options) {
   };
 });
 
-addHelper('footer', function (options) {
+addInputPassHelper('footer', function (options) {
   var align = options.hash.align || 'center';
 
   printInfo.footer = {
@@ -89,21 +123,21 @@ addHelper('footer', function (options) {
   };
 });
 
-addHelper('math', function (options) {
+addOutputPassHelper('math', function (options) {
   return katex.renderToString('\\int_2^5 x^2');
 });
 
-addHelper('image', function(options) {
+addOutputPassHelper('image', function(options) {
   var image = fs.readFileSync(options.hash.file);
   var base64Image = new Buffer(image, 'binary').toString('base64');
 
   return '<img src="' + 'data:image/jpg;base64,' + base64Image + '"/>'
 });
 
-addHelper('ref', function(options) {
+addOutputPassHelper('ref', function(options) {
 });
 
-addHelper('new_page', function(options) {
+addOutputPassHelper('new_page', function(options) {
   return '<div style="page-break-after: always"></div>';
 });
 
@@ -122,7 +156,7 @@ function mlaFormatBibEntry(entry) {
     valOrEmpty(entry.MEDIUM, '.');
 }
 
-addHelper('bibliography', function(options) {
+addOutputPassHelper('bibliography', function(options) {
   var bibtexText = fs.readFileSync('./bibtex.txt', 'utf8');
   var bib = bibtex(bibtexText);
 
