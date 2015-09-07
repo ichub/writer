@@ -6,17 +6,27 @@ var pdf = require('html-pdf');
 var sass = require('node-sass');
 var bibtex = require('bibtex-parser');
 
-function HelperInfo(name) {
+// helperType can be one of: ['input', 'output']
+function HelperInfo(name, helperType) {
   this.name = name;
+  this.helperType = helperType;
 }
 
 HelperInfo.data = {};
 
 HelperInfo.prototype.getData = function() {
+  if (this.helperType == 'output') {
+    throw new Error('The helper\"' + this.name + '\" does not provide data because it is an output helper');
+  }
+
   return HelperInfo.data[this.name];
 };
 
 HelperInfo.prototype.setData = function(data) {
+  if (this.helperType == 'output') {
+    throw new Error('The data of helper\"' + this.name + '\" cannot be set because it is an output helper');
+  }
+
   HelperInfo.data[this.name] = data;
 };
 
@@ -60,7 +70,7 @@ function addHelper(name, helper) {
 }
 
 function addInputPassHelper(name, helper) {
-  var info = new HelperInfo(name);
+  var info = new HelperInfo(name, 'input');
 
   addHelper(name, function() {
     if (isFirstPass) {
@@ -84,7 +94,7 @@ function addOutputPassHelper(name, helper) {
     return identityHelper(name).apply(this, arguments);
   });
 
-  return new HelperInfo(name);
+  return new HelperInfo(name, 'output');
 }
 
 function identityHelper(name) {
