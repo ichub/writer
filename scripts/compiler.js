@@ -14,7 +14,7 @@ function HelperInfo(name, helperType) {
 
 HelperInfo.data = {};
 
-HelperInfo.prototype.getData = function() {
+HelperInfo.prototype.getData = function () {
   if (this.helperType == 'output') {
     throw new Error('The helper\"' + this.name + '\" does not provide data because it is an output helper');
   }
@@ -22,7 +22,7 @@ HelperInfo.prototype.getData = function() {
   return HelperInfo.data[this.name];
 };
 
-HelperInfo.prototype.setData = function(data) {
+HelperInfo.prototype.setData = function (data) {
   if (this.helperType == 'output') {
     throw new Error('The data of helper\"' + this.name + '\" cannot be set because it is an output helper');
   }
@@ -72,7 +72,7 @@ function addHelper(name, helper) {
 function addInputPassHelper(name, helper) {
   var info = new HelperInfo(name, 'input');
 
-  addHelper(name, function() {
+  addHelper(name, function () {
     if (isFirstPass) {
       var data = helper.apply(this, arguments);
 
@@ -86,7 +86,7 @@ function addInputPassHelper(name, helper) {
 }
 
 function addOutputPassHelper(name, helper) {
-  addHelper(name, function() {
+  addHelper(name, function () {
     if (!isFirstPass) {
       return helper.apply(this, arguments);
     }
@@ -98,7 +98,7 @@ function addOutputPassHelper(name, helper) {
 }
 
 function identityHelper(name) {
-  return function(options) {
+  return function (options) {
     var result = '{{{' + name + ' ';
 
     for (var prop in options.hash) {
@@ -160,17 +160,25 @@ var math = addOutputPassHelper('math', function (options) {
   return katex.renderToString('\\int_2^5 x^2');
 });
 
-var image = addOutputPassHelper('image', function(options) {
+var image = addOutputPassHelper('image', function (options) {
   var image = fs.readFileSync(options.hash.file);
   var base64Image = new Buffer(image, 'binary').toString('base64');
 
   return '<img src="' + 'data:image/jpg;base64,' + base64Image + '"/>'
 });
 
-var ref = addOutputPassHelper('ref', function(options) {
+var ref = addOutputPassHelper('ref', function (options) {
+  var bibData = bibliography_info.getData();
+  for (var i = 0; i < bibData.length; i++) {
+    if (bibData[i].key == options.hash.key.toUpperCase()) {
+      return '<span class="reference">[' + (i + 1) + ']</span>';
+    }
+  }
+
+  throw new Error('No bibliography entry with key \"' + options.hash.key + '\" exists')
 });
 
-var new_page = addOutputPassHelper('new_page', function(options) {
+var new_page = addOutputPassHelper('new_page', function (options) {
   return '<div style="page-break-after: always"></div>';
 });
 
@@ -178,35 +186,43 @@ function valOrEmpty(val, other) {
   return val == undefined ? '' : val + other;
 }
 
-function mlaFormatBibEntry(entry) {
-  return valOrEmpty(entry.AUTHOR, '. ') +
+function mlaFormatBibEntry(data) {
+  return valOrEmpty(data.AUTHOR, '. ') +
     '<em>' +
-    valOrEmpty(entry.TITLE, '. ') +
+    valOrEmpty(data.TITLE, '. ') +
     '</em> ' +
-    valOrEmpty(entry.ADDRESS, ': ') +
-    valOrEmpty(entry.PUBLISHER, ', ') +
-    valOrEmpty(entry.YEAR, '. ') +
-    valOrEmpty(entry.MEDIUM, '.');
+    valOrEmpty(data.ADDRESS, ': ') +
+    valOrEmpty(data.PUBLISHER, ', ') +
+    valOrEmpty(data.YEAR, '. ') +
+    valOrEmpty(data.MEDIUM, '.');
 }
 
-var bibliography_info = addInputPassHelper('bibliography_info', function(options) {
+var bibliography_info = addInputPassHelper('bibliography_info', function (options) {
   var bibtexText = fs.readFileSync('./bibtex.txt', 'utf8');
   var bib = bibtex(bibtexText);
 
   var entries = [];
 
   for (var prop in bib) {
-    entries.push(mlaFormatBibEntry(bib[prop]));
+    entries.push({
+      key: prop,
+      data: bib[prop]
+    });
   }
-
-  entries.sort();
-
   return entries;
 });
 
-var bibliography = addOutputPassHelper('bibliography', function(options) {
+var bibliography = addOutputPassHelper('bibliography', function (options) {
+  var entries = bibliography_info.getData();
+
+  var mlaFormattedEntries = entries.map(function (entry) {
+    return mlaFormatBibEntry(entry.data);
+  });
+
+  mlaFormattedEntries.sort();
+
   var result = '<ol class="bibliography">';
-  bibliography_info.getData().forEach(function(item) {
+  mlaFormattedEntries.forEach(function (item) {
     result += '<li>' + item + '</li>';
   });
 
