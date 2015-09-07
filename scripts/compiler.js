@@ -156,7 +156,9 @@ function mlaFormatBibEntry(entry) {
     valOrEmpty(entry.MEDIUM, '.');
 }
 
-addOutputPassHelper('bibliography', function(options) {
+var bibliography = [];
+
+addInputPassHelper('bibliography_info', function(options) {
   var bibtexText = fs.readFileSync('./bibtex.txt', 'utf8');
   var bib = bibtex(bibtexText);
 
@@ -168,8 +170,12 @@ addOutputPassHelper('bibliography', function(options) {
 
   entries.sort();
 
+  bibliography = entries;
+});
+
+addOutputPassHelper('bibliography', function(options) {
   var result = '<ol class="bibliography">';
-  entries.forEach(function(item) {
+  bibliography.forEach(function(item) {
     result += '<li>' + item + '</li>';
   });
 
