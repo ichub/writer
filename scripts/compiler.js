@@ -6,6 +6,20 @@ var pdf = require('html-pdf');
 var sass = require('node-sass');
 var bibtex = require('bibtex-parser');
 
+function HelperInfo(name) {
+  this.name = name;
+}
+
+HelperInfo.data = {};
+
+HelperInfo.prototype.getData = function() {
+  return HelperInfo.data[this.name];
+};
+
+HelperInfo.prototype.setData = function(data) {
+  HelperInfo.data[this.name] = data;
+};
+
 function findPeriod(periodNumber, meta) {
   for (var i = 0; i < meta.courses.length; i++) {
     if (meta.courses[i].period == periodNumber) {
@@ -35,23 +49,30 @@ function preprocessHash(that, options, path) {
   }
 }
 
-
 function addHelper(name, helper) {
   hb.registerHelper(name, function (options) {
     preprocessHash(this, options);
 
     return helper.apply(this, arguments);
   });
+
+  return new HelperInfo(name);
 }
 
 function addInputPassHelper(name, helper) {
+  var info = new HelperInfo(name);
+
   addHelper(name, function() {
     if (isFirstPass) {
-      helper.apply(this, arguments);
+      var data = helper.apply(this, arguments);
+
+      info.setData(data);
     }
 
     return '';
   });
+
+  return info;
 }
 
 function addOutputPassHelper(name, helper) {
@@ -62,6 +83,8 @@ function addOutputPassHelper(name, helper) {
 
     return identityHelper(name).apply(this, arguments);
   });
+
+  return new HelperInfo(name);
 }
 
 function identityHelper(name) {
@@ -78,7 +101,7 @@ function identityHelper(name) {
   }
 }
 
-addHelper('heading', function (options) {
+var heading = addOutputPassHelper('heading', function (options) {
   if (typeof options.hash.period != 'undefined') {
     var course = findPeriod(options.hash.period, this);
     var n = '<br />';
@@ -90,7 +113,7 @@ addHelper('heading', function (options) {
   return 'error';
 });
 
-addInputPassHelper('document', function (options) {
+var document = addInputPassHelper('document', function (options) {
   for (prop in options.hash) {
     if (prop == 'margin') {
       printInfo['border'] = {
@@ -105,7 +128,7 @@ addInputPassHelper('document', function (options) {
   }
 });
 
-addInputPassHelper('header', function (options) {
+var header = addInputPassHelper('header', function (options) {
   var align = options.hash.align || 'center';
 
   printInfo.header = {
@@ -114,7 +137,7 @@ addInputPassHelper('header', function (options) {
   };
 });
 
-addInputPassHelper('footer', function (options) {
+var footer = addInputPassHelper('footer', function (options) {
   var align = options.hash.align || 'center';
 
   printInfo.footer = {
@@ -123,21 +146,21 @@ addInputPassHelper('footer', function (options) {
   };
 });
 
-addOutputPassHelper('math', function (options) {
+var math = addOutputPassHelper('math', function (options) {
   return katex.renderToString('\\int_2^5 x^2');
 });
 
-addOutputPassHelper('image', function(options) {
+var image = addOutputPassHelper('image', function(options) {
   var image = fs.readFileSync(options.hash.file);
   var base64Image = new Buffer(image, 'binary').toString('base64');
 
   return '<img src="' + 'data:image/jpg;base64,' + base64Image + '"/>'
 });
 
-addOutputPassHelper('ref', function(options) {
+var ref = addOutputPassHelper('ref', function(options) {
 });
 
-addOutputPassHelper('new_page', function(options) {
+var new_page = addOutputPassHelper('new_page', function(options) {
   return '<div style="page-break-after: always"></div>';
 });
 
@@ -156,9 +179,7 @@ function mlaFormatBibEntry(entry) {
     valOrEmpty(entry.MEDIUM, '.');
 }
 
-var bibliography = [];
-
-addInputPassHelper('bibliography_info', function(options) {
+var bibliography_info = addInputPassHelper('bibliography_info', function(options) {
   var bibtexText = fs.readFileSync('./bibtex.txt', 'utf8');
   var bib = bibtex(bibtexText);
 
@@ -170,12 +191,12 @@ addInputPassHelper('bibliography_info', function(options) {
 
   entries.sort();
 
-  bibliography = entries;
+  return entries;
 });
 
-addOutputPassHelper('bibliography', function(options) {
+var bibliography = addOutputPassHelper('bibliography', function(options) {
   var result = '<ol class="bibliography">';
-  bibliography.forEach(function(item) {
+  bibliography_info.getData().forEach(function(item) {
     result += '<li>' + item + '</li>';
   });
 
