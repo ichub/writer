@@ -145,11 +145,17 @@ addHelper('bibliography', function(options) {
 });
 
 var printInfo = {};
+var isFirstPass = true;
+
 function compileDocument(template, content, style, metadata) {
   var contentTemplate = hb.compile(content);
   var templateTemplate = hb.compile(template);
 
   var body = contentTemplate(metadata);
+
+  isFirstPass = false;
+
+  body = hb.compile(body)(metadata);
   body = marked(body);
 
   var compiledStyle = sass.renderSync({
