@@ -5,30 +5,8 @@ var marked = require('marked');
 var pdf = require('html-pdf');
 var sass = require('node-sass');
 var bibtex = require('bibtex-parser');
+import helperInfo = require('./helperInfo');
 
-// helperType can be one of: ['input', 'output']
-function HelperInfo(name, helperType) {
-  this.name = name;
-  this.helperType = helperType;
-}
-
-HelperInfo.data = {};
-
-HelperInfo.prototype.getData = function () {
-  if (this.helperType == 'output') {
-    throw new Error('The helper\"' + this.name + '\" does not provide data because it is an output helper');
-  }
-
-  return HelperInfo.data[this.name];
-};
-
-HelperInfo.prototype.setData = function (data) {
-  if (this.helperType == 'output') {
-    throw new Error('The data of helper\"' + this.name + '\" cannot be set because it is an output helper');
-  }
-
-  HelperInfo.data[this.name] = data;
-};
 
 function findPeriod(periodNumber, meta) {
   for (var i = 0; i < meta.courses.length; i++) {
@@ -65,12 +43,10 @@ function addHelper(name, helper) {
 
     return helper.apply(this, arguments);
   });
-
-  return new HelperInfo(name);
 }
 
 function addInputPassHelper(name, helper) {
-  var info = new HelperInfo(name, 'input');
+  var info = new helperInfo.InputHelperInfo(name, 'input');
 
   addHelper(name, function () {
     if (isFirstPass) {
@@ -94,7 +70,7 @@ function addOutputPassHelper(name, helper) {
     return identityHelper(name).apply(this, arguments);
   });
 
-  return new HelperInfo(name, 'output');
+  return new helperInfo.OutputHelperInfo(name, 'output');
 }
 
 function identityHelper(name) {
