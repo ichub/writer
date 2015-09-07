@@ -1,14 +1,13 @@
 var fs = require('fs');
-var hb = require('handlebars');
-var katex = require('katex');
-var marked = require('marked');
+import hb = require('handlebars');
+import katex = require('katex');
+import marked = require('marked');
 var pdf = require('html-pdf');
-var sass = require('node-sass');
-var bibtex = require('bibtex-parser');
+import sass = require('node-sass');
+var bibtex = <Function> require('bibtex-parser');
 import helperInfo = require('./helperInfo');
 
-
-function findPeriod(periodNumber, meta) {
+function findPeriod(periodNumber, meta:IMetadata) {
   for (var i = 0; i < meta.courses.length; i++) {
     if (meta.courses[i].period == periodNumber) {
       return meta.courses[i];
@@ -18,7 +17,7 @@ function findPeriod(periodNumber, meta) {
   throw 'no period found';
 }
 
-function preprocessHash(that, options, path) {
+function preprocessHash(that, options, path = '') {
   path = path || '';
 
   for (var contextVarName in that) {
@@ -46,7 +45,7 @@ function addHelper(name, helper) {
 }
 
 function addInputPassHelper(name, helper) {
-  var info = new helperInfo.InputHelperInfo(name, 'input');
+  var info = new helperInfo.InputHelperInfo(name);
 
   addHelper(name, function () {
     if (isFirstPass) {
@@ -70,7 +69,7 @@ function addOutputPassHelper(name, helper) {
     return identityHelper(name).apply(this, arguments);
   });
 
-  return new helperInfo.OutputHelperInfo(name, 'output');
+  return new helperInfo.OutputHelperInfo(name);
 }
 
 function identityHelper(name) {
@@ -207,10 +206,10 @@ var bibliography = addOutputPassHelper('bibliography', function (options) {
   return result;
 });
 
-var printInfo = {};
+var printInfo:IPrintInfo = <IPrintInfo> {};
 var isFirstPass = true;
 
-function compileDocument(template, content, style, metadata) {
+export function compileDocument(template, content, style, metadata:IMetadata) {
   var contentTemplate = hb.compile(content);
   var templateTemplate = hb.compile(template);
 
@@ -234,10 +233,8 @@ function compileDocument(template, content, style, metadata) {
   });
 
   pdf.create(compiledHtml, printInfo).toFile('./compiled.pdf', function (err, buf) {
-    printInfo = {};
+    printInfo = <IPrintInfo> {};
   });
 
   fs.writeFileSync('./compiled.html', compiledHtml);
 }
-
-module.exports = compileDocument;
