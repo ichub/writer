@@ -1,10 +1,10 @@
-var fs = require('fs');
+import fs = require('fs');
 import hb = require('handlebars');
 import katex = require('katex');
 import marked = require('marked');
-var pdf = require('html-pdf');
+import pdf = require('html-pdf');
 import sass = require('node-sass');
-var bibtex = <Function> require('bibtex-parser');
+import bibtex = require('bibtex-parser');
 import helperInfo = require('./helperInfo');
 
 function findPeriod(periodNumber, meta:IMetadata) {
@@ -136,8 +136,7 @@ var math = addOutputPassHelper('math', function (options) {
 });
 
 var image = addOutputPassHelper('image', function (options) {
-  var image = fs.readFileSync(options.hash.file);
-  var base64Image = new Buffer(image, 'binary').toString('base64');
+  var base64Image = fs.readFileSync(options.hash.file).toString('base64');
 
   return '<img src="' + 'data:image/jpg;base64,' + base64Image + '"/>'
 });
